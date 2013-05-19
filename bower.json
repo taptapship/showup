@@ -1,0 +1,14 @@
+{
+  "name": "showup",
+  "version": "0.0.1",
+  "author": "Stephen Sawchuk",
+  "description": "A Showdown companion.",
+  "main": "showup.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/stephenplusplus/showup.git"
+  },
+  "dependencies": {
+    "showdown": "~0.3.1"
+  }
+}
