@@ -1,27 +1,60 @@
 ;(function (window, document) {
+  /**
+   * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+   *
+   *  Showup.
+   *  ^^^^^^
+   *  showdown's buddy.
+   *  http://github.com/stephenplusplus/showup
+   *
+   *  This lil' plugin makes some decisions for you, so it's important you know
+   *  what these are, should you want to make some overrides.
+   *
+   * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+   *
+   *  First, here's what's expected and required for this to work:
+   *
+   *    1. Showup will have full control of a "container" div.
+   *    2. You keep a "wordmap" JSON file. (details below)
+   *    3. You keep your posts as .md files in a single location.
+   *    4. You like awesome things!
+   *
+   * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+   *
+   *  The structure of your "wordmap":
+   *
+   *    [
+   *      "id:the-filename-of-your-post",
+   *      "every",
+   *      "word",
+   *      "from",
+   *      "your",
+   *      "post",
+   *      "id:the-filename-of-another-one-of-your-posts",
+   *      "every",
+   *      "word",
+   *      "from",
+   *      "this",
+   *      "post",
+   *      "too"
+   *    ]
+   *
+   * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+   */
+
   'use strict';
 
-  var Showup = window.Showup = {
-    convert: (new Showdown.converter().makeHtml),
-    init: function (config) {
-      Showup.Container = config.container;
+  var Showup = window.Showup = {};
 
-      Showup._getFile('wordmap.json', function (res) {
-        Showup.wordmaps = JSON.parse(res).join(' ');
 
-        document.body.appendChild(function () {
-          Showup.input = document.createElement('input');
-          Showup.input.style.position = 'fixed';
-          Showup.input.style.left = '-99999%';
-          return Showup.input;
-        }());
-
-        window.addEventListener('keyup', Showup.Search);
-      });
-    }
-  };
-
-  Showup._getFile = function (file, callback) {
+  /**
+   * @private
+   * @param--{string}---file-----Path to the file.
+   * @param--{function}-callback-(optional) Called after the file is found.
+   * @param--{object}---context--(optional) Context in which to invoke callback.
+   * @return-{undefined}
+   */
+  var getFile = function (file, callback, context) {
     var xhr = new XMLHttpRequest();
 
     xhr.open('GET', file, true);
@@ -29,13 +62,19 @@
 
     xhr.onload = function () {
       if (xhr.status === 200 && callback) {
-        callback(xhr.responseText);
+        callback.call(context, xhr.responseText);
       }
     };
   };
 
-  Showup._matchPost = function () {
-    var pattern = Showup.input.value.split('').reduce(function (a, b) {
+
+  /**
+   * @private
+   * @this---{Showup}
+   * @return-{undefined}
+   */
+  var matchPost = function () {
+    var pattern = this.input.value.split('').reduce(function (a, b) {
       return a + '[^\\s]*' + b + '[^\\s]*';
     }, '');
 
@@ -53,43 +92,98 @@
       if (searchString.match(/[^\s]*/)) {
         id = searchString.match(/[^\s]*/)[0];
 
-        Showup.Load(id);
+        this.Load(id);
       }
     }
   };
 
-  Showup.Load = function (id) {
-    if (Showup._loading || Showup._active === id) {
+
+  /**
+   * Shortcut to Showdown.converter's makeHtml.
+   * @private
+   */
+  var process = (new Showdown.converter()).makeHtml;
+
+
+  /**
+   * @public
+   * @param--{object}----config-(required) container, posts, wordmap.
+   * @return-{undefined}
+   */
+  Showup.init = function (config) {
+    if (!Showdown || !config.container || !config.posts || !config.wordmap) {
       return;
     }
 
-    Showup._active = id;
-    Showup._loading = true;
+    this.Container = config.container;
+    this.Posts = config.posts;
 
-    this._getFile('posts/' + id + '.md', function (markdown) {
-      var post = Showup.convert(markdown);
+    getFile(config.wordmap, function (res) {
+      this.wordmaps = JSON.parse(res).join(' ');
 
-      Showup.Container.innerHTML = post;
+      document.body.appendChild(function () {
+        this.input = document.createElement('input');
+        this.input.style.position = 'fixed';
+        this.input.style.top = 0;
+        this.input.style.left = '-99999%';
+        return this.input;
+      }.call(this));
 
-      Showup._loading = false;
-    });
+      window.addEventListener('keyup', this.Search.bind(this));
+    }, this);
   };
 
+
+  /**
+   * @public
+   * @this---{Showup}
+   * @param--{string}----id-The id of the post to load.
+   * @return-{undefined}
+   */
+  Showup.Load = function (id) {
+    if (this._loading || this._active === id) {
+      return;
+    }
+
+    this._active = id;
+    this._loading = true;
+
+    getFile(this.Posts + id + '.md', this.InsertPost, this);
+  };
+
+
+  /**
+   * @public
+   * @this---{Showup}
+   * @param--{string}----markdown-Markdown which will append to the container.
+   * @return-{undefined}
+   */
+  Showup.InsertPost = function (markdown) {
+    var post = process(markdown);
+
+    this.Container.innerHTML = post;
+
+    this._loading = false;
+  };
+
+
+  /**
+   * @public
+   * @this---{Showup}
+   * @param--{object}----event-The DOM event triggered from the keyup.
+   * @return-{undefined}
+   */
   Showup.Search = function (event) {
     if (event.target === document.body) {
       var key = String.fromCharCode(event.keyCode);
       if (/A-Z/i.test(key)) {
-        Showup.input.value += String.fromCharCode(key);
+        this.input.value += String.fromCharCode(key);
       }
-      return Showup.input.focus();
+      return this.input.focus();
     }
 
-    if (event.target === Showup.input) {
-      Showup._matchPost();
+    if (event.target === this.input) {
+      matchPost.call(this);
     }
   };
-
-  Showup.init({
-    container: document.querySelector('.container')
-  });
 })(window, document);
