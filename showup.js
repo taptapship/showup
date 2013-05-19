@@ -40,6 +40,32 @@
    *    ]
    *
    * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+   *
+   *  The public methods available:
+   *
+   *    Showup.init
+   *      > Bootstrap the plugin.
+   *      @ {
+   *        container
+   *          (DOM Element)
+   *        posts
+   *          ('path/to/posts/')
+   *        wordmap
+   *          ('path/to/wordmap/file.json')
+   *      }
+   *
+   *    Showup.Load
+   *      > Load a markdown file, process, and append to the container.
+   *      @ String
+   *          name of the file, without the '.md' extension
+   *
+   *    Showup.InsertPost
+   *      > Takes a block of markdown, processes it, and injects into the
+   *      > container.
+   *      @ String
+   *          block of markdown
+   *
+   * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
    */
 
   'use strict';
@@ -74,6 +100,10 @@
    * @return-{undefined}
    */
   var matchPost = function () {
+    if (this.input.value.length < 5) {
+      return;
+    }
+
     var pattern = this.input.value.split('').reduce(function (a, b) {
       return a + '[^\\s]*' + b + '[^\\s]*';
     }, '');
@@ -94,6 +124,27 @@
 
         this.Load(id);
       }
+    }
+  };
+
+
+  /**
+   * @public
+   * @this---{Showup}
+   * @param--{object}----event-The DOM event triggered from the keyup.
+   * @return-{undefined}
+   */
+  var search = function (event) {
+    if (event.target === document.body) {
+      var key = String.fromCharCode(event.keyCode);
+      if (/A-Z/i.test(key)) {
+        this.input.value += String.fromCharCode(key);
+      }
+      return this.input.focus();
+    }
+
+    if (event.target === this.input) {
+      matchPost.call(this);
     }
   };
 
@@ -129,7 +180,7 @@
         return this.input;
       }.call(this));
 
-      window.addEventListener('keyup', this.Search.bind(this));
+      window.addEventListener('keyup', search.bind(this));
     }, this);
   };
 
@@ -141,7 +192,7 @@
    * @return-{undefined}
    */
   Showup.Load = function (id) {
-    if (this._loading || this._active === id) {
+    if (!id || this._loading || this._active === id) {
       return;
     }
 
@@ -164,26 +215,5 @@
     this.Container.innerHTML = post;
 
     this._loading = false;
-  };
-
-
-  /**
-   * @public
-   * @this---{Showup}
-   * @param--{object}----event-The DOM event triggered from the keyup.
-   * @return-{undefined}
-   */
-  Showup.Search = function (event) {
-    if (event.target === document.body) {
-      var key = String.fromCharCode(event.keyCode);
-      if (/A-Z/i.test(key)) {
-        this.input.value += String.fromCharCode(key);
-      }
-      return this.input.focus();
-    }
-
-    if (event.target === this.input) {
-      matchPost.call(this);
-    }
   };
 })(window, document);
