@@ -1,13 +1,17 @@
 # Showup.
 
 ### showdown's buddy.
-
-![](http://s7.postimg.org/hygpi7hfv/showup_sample.png)
-
 *Showup is still in a state of active development. Very risky to use, but that's all the more reason to give it a try! Break it, fix it, repeat.*
 
-This lil' plugin makes some decisions for you, so it's important you know
-what these are, should you want to make some overrides.
+![](http://s16.postimg.org/58gu8rvhx/showup_preview.png)
+
+
+## Demo
+[Click here](http://stephenplusplus.github.io/generator-weblog) and type "angular" to pull up a post!
+
+
+## About
+This lil' plugin makes some decisions for you, so it's important you know what these are, should you want to make some overrides.
 
 First, here's what's expected and required for this to work:
 
@@ -16,7 +20,8 @@ First, here's what's expected and required for this to work:
 3. You keep your posts as .md files in a single location.
 4. You like awesome things!
 
-### The structure of your "wordmap"
+
+#### The structure of your "wordmap"
 
 ```js
 [
@@ -37,7 +42,7 @@ First, here's what's expected and required for this to work:
 ```
 
 
-### The public methods available
+### API
 
 ##### Showup.init
 Bootstrap the plugin.
