@@ -100,6 +100,14 @@
    * @return-{undefined}
    */
   var matchPost = function () {
+    if (this.Gutter && !this._gutterVisible) {
+      showGutter.call(this);
+    }
+
+    window.setTimeout(function () {
+      fillTheGutter.call(Showup);
+    }, 50);
+
     if (this.input.value.length < 5) {
       return;
     }
@@ -108,16 +116,16 @@
       return a + '[^\\s]*' + b + '[^\\s]*';
     }, '');
 
-    var match = this.wordmaps.match(new RegExp(pattern));
+    var match = this.wordmap.match(new RegExp(pattern, 'i'));
 
     var searchString;
     var index;
     var id;
 
     if (match) {
-      index = this.wordmaps.indexOf(match[0]);
-      searchString = this.wordmaps.substr(0, index + match[0].length);
-      searchString = searchString.substr(searchString.lastIndexOf(':id') + 4);
+      index = this.wordmap.indexOf(match[0]);
+      searchString = this.wordmap.substr(0, index + match[0].length);
+      searchString = searchString.substr(searchString.lastIndexOf('id:') + 3);
 
       if (searchString.match(/[^\s]*/)) {
         id = searchString.match(/[^\s]*/)[0];
@@ -129,7 +137,7 @@
 
 
   /**
-   * @public
+   * @private
    * @this---{Showup}
    * @param--{object}----event-The DOM event triggered from the keyup.
    * @return-{undefined}
@@ -146,6 +154,82 @@
     if (event.target === this.input) {
       matchPost.call(this);
     }
+
+    window.clearTimeout(this.timeout);
+
+    this.timeout = window.setTimeout(function () {
+      if (Showup._gutterVisible) {
+        killGutter.call(Showup);
+      }
+    }, 3000);
+  };
+
+
+  /**
+   * @private
+   * @this---{Showup}
+   * @return-{undefined}
+   */
+  var fillTheGutter = function () {
+    var terms = this.input.value.split(' ');
+    var p;
+
+    if (!this.terms || terms.length > this.terms) {
+      this.terms = terms.length;
+
+      p = document.createElement('p');
+      this.Gutter.appendChild(p);
+    } else {
+      p = this.Gutter.querySelector('p:last-of-type')
+    }
+
+    p.innerText = terms[terms.length - 1];
+  };
+
+
+  /**
+   * @private
+   * @this---{Showup}
+   * @return-{undefined}
+   */
+  var showGutter = function () {
+    if (this._gutterVisible) {
+      return;
+    }
+
+    this._gutterVisible = true;
+
+    if (this.Gutter.className.indexOf('active') === -1) {
+      this.Gutter.className += ' active';
+    }
+
+    if (this.Container.className.indexOf('gutter-visible') === -1) {
+      this.Container.className += ' gutter-visible';
+    }
+  };
+
+
+  /**
+   * @private
+   * @this---{Showup}
+   * @return-{undefined}
+   */
+  var killGutter = function () {
+    if (!this._gutterVisible) {
+      return;
+    }
+
+    this.input.value = '';
+
+    this.terms = undefined;
+
+    this._gutterVisible = false;
+
+    this.Gutter.innerHTML = '';
+    this.Gutter.className = this.Gutter.className.replace('active', '');
+
+    this.Container.className = this.Container.className.replace('gutter-visible', '');
+
   };
 
 
@@ -167,21 +251,31 @@
     }
 
     this.Container = config.container;
+    this.Container.setAttribute('data-showup', this.Container.className);
+    this.Gutter = config.gutter || document.querySelector('.gutter');
     this.Posts = config.posts;
 
-    getFile(config.wordmap, function (res) {
-      this.wordmaps = JSON.parse(res).join(' ');
+    if (typeof config.wordmap === 'string') {
+      getFile(config.wordmap, function (res) {
+        this.wordmap = JSON.parse(res).join(' ');
 
-      document.body.appendChild(function () {
-        this.input = document.createElement('input');
-        this.input.style.position = 'fixed';
-        this.input.style.top = 0;
-        this.input.style.left = '-99999%';
-        return this.input;
-      }.call(this));
+        document.body.appendChild(function () {
+          this.input = document.createElement('input');
+          this.input.style.position = 'fixed';
+          this.input.style.top = 0;
+          this.input.style.left = '-99999%';
+          return this.input;
+        }.call(this));
 
-      window.addEventListener('keyup', search.bind(this));
-    }, this);
+        window.addEventListener('keypress', search.bind(this));
+      }, this);
+
+      if (location.hash) {
+        this.Load(location.hash.substr(1));
+      }
+    } else {
+      this.wordmap = config.wordmap;
+    }
   };
 
 
@@ -199,6 +293,8 @@
     this._active = id;
     this._loading = true;
 
+    this.Container.className = this.Container.className.replace('rollIn', '');
+
     getFile(this.Posts + id + '.md', this.InsertPost, this);
   };
 
@@ -211,8 +307,21 @@
    */
   Showup.InsertPost = function (markdown) {
     var post = process(markdown);
+    var originalClassNames = this.Container.getAttribute('data-showup');
+    var newClassNames = originalClassNames + ' animated rollIn';
 
+    if (this._gutterVisible) {
+      newClassNames += ' gutter-visible';
+    }
+
+    if (post.indexOf('<pre>') === -1) {
+      newClassNames += ' cols';
+    }
+
+    this.Container.className = newClassNames;
     this.Container.innerHTML = post;
+
+    window.location.hash = this._active;
 
     this._loading = false;
   };

@@ -1,0 +1,133 @@
+@import url('http://fonts.googleapis.com/css?family=Esteban|Trocchi|Oleo+Script+Swash+Caps');
+
+.animated{-webkit-animation-fill-mode:both;-moz-animation-fill-mode:both;-ms-animation-fill-mode:both;-o-animation-fill-mode:both;animation-fill-mode:both;-webkit-animation-duration:1s;-moz-animation-duration:1s;-ms-animation-duration:1s;-o-animation-duration:1s;animation-duration:1s;}.animated.hinge{-webkit-animation-duration:2s;-moz-animation-duration:2s;-ms-animation-duration:2s;-o-animation-duration:2s;animation-duration:2s;}@-webkit-keyframes rollIn {
+  0% { opacity: 0; -webkit-transform: translateX(-100%) rotate(-120deg); }  100% { opacity: 1; -webkit-transform: translateX(0px) rotate(0deg); }
+}
+
+@-moz-keyframes rollIn {
+  0% { opacity: 0; -moz-transform: translateX(-100%) rotate(-120deg); }
+  100% { opacity: 1; -moz-transform: translateX(0px) rotate(0deg); }
+}
+
+@-o-keyframes rollIn {
+  0% { opacity: 0; -o-transform: translateX(-100%) rotate(-120deg); }
+  100% { opacity: 1; -o-transform: translateX(0px) rotate(0deg); }
+}
+
+@keyframes rollIn {
+  0% { opacity: 0; transform: translateX(-100%) rotate(-120deg); }
+  100% { opacity: 1; transform: translateX(0px) rotate(0deg); }
+}
+
+.rollIn {
+  -webkit-animation-name: rollIn;
+  -moz-animation-name: rollIn;
+  -o-animation-name: rollIn;
+  animation-name: rollIn;
+}
+
+body {
+  background-color: #fff;
+  font-family: 'Esteban', serif;
+  margin: 10px;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Trocchi', serif;
+}
+
+h1:first-letter,
+h2:first-letter,
+h3:first-letter {
+  font-family: 'Oleo Script Swash Caps', cursive;
+  text-transform: capitalize;
+  background-color: #cecece;
+}
+
+h1:first-letter,
+h2:first-letter {
+  font-size: 2.5em;
+}
+
+h3:first-letter {
+  font-size: 1.8em;
+}
+
+a {
+  color: #aaa;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #bbb;
+  text-decoration: underline;
+}
+
+[data-showup] {
+  transition: padding 500ms cubic-bezier(0.6, -0.28, 0.735, 0.045);
+}
+
+.gutter {
+  transition: left 300ms;
+}
+
+[data-showup] {
+  width: 95%;
+  margin: auto;
+  -webkit-animation-duration: 500ms;
+  -webkit-animation-delay: 0;
+}
+
+.gutter {
+  position: fixed;
+  z-index: 1;
+  width: 350px;
+  top: 0;
+  left: -377px;
+  bottom: 0;
+  background-color: #aaa;
+  border-right: 22px solid #999;
+  box-shadow: 1px -3px 11px #ccc;
+}
+
+.gutter p {
+  display: block;
+  padding: 8px;
+  background-color: #bbb;
+  font-family: 'Oleo Script Swash Caps', cursive;
+  font-size: 1.8em;
+  color: #ddd;
+}
+
+.gutter p:last-child:after {
+  content: "... ";
+}
+
+.gutter.active {
+  left: 0;
+}
+
+[data-showup].gutter-visible {
+  padding-left: 400px;
+}
+
+.cols {
+  -webkit-column-rule: 1px dotted #eee;
+  -webkit-column-gap: 14px;
+  -webkit-column-count: 2;
+}
+
+.cols h1,
+.cols h2,
+.cols h3 {
+  -webkit-column-span: all;
+}
+
+@media screen and (min-width: 960px) {
+  .cols {
+    -webkit-column-count: 3;
+  }
+}
