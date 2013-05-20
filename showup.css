@@ -48,7 +48,9 @@ h3:first-letter {
 }
 
 h1:first-letter,
-h2:first-letter {
+h1:last-child:first-letter,
+h2:first-letter,
+h2:last-child:first-letter {
   font-size: 2.5em;
 }
 
@@ -64,6 +66,15 @@ a {
 a:hover {
   color: #bbb;
   text-decoration: underline;
+}
+
+pre {
+  border-left: 8px solid #eee;
+  padding-left: 20px;
+}
+
+code {
+  color: #333;
 }
 
 [data-showup] {
