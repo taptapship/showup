@@ -2,6 +2,8 @@
 
 ### showdown's buddy.
 
+*Showup is still in a state of active development. Very risky to use, but that's all the more reason to give it a try! Break it, fix it, repeat.*
+
 This lil' plugin makes some decisions for you, so it's important you know
 what these are, should you want to make some overrides.
 
