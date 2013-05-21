@@ -3,7 +3,7 @@
 ### showdown's buddy.
 *Showup is still in a state of active development. Very risky to use, but that's all the more reason to give it a try! Break it, fix it, repeat.*
 
-![](http://s16.postimg.org/58gu8rvhx/showup_preview.png)
+![](http://s23.postimg.org/4wbfxk0ff/angular_showup_sample.png)
 
 
 ## Demo
