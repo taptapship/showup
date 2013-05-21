@@ -1,11 +1,11 @@
-;(function (window, document) {
+;(function (window, document, Showdown) {
   /**
    * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
    *
    *  Showup.
    *  ^^^^^^
    *  showdown's buddy.
-   *  http://github.com/stephenplusplus/showup
+   *  https://github.com/stephenplusplus/showup
    *
    *  This lil' plugin makes some decisions for you, so it's important you know
    *  what these are, should you want to make some overrides.
@@ -70,7 +70,24 @@
 
   'use strict';
 
+  if (!Showdown) {
+    // Showdown is required for this plugin to operate.
+    return;
+  }
+
+
+  /**
+   * The Showup API.
+   * @public
+   */
   var Showup = window.Showup = {};
+
+
+  /**
+   * Shortcut to Showdown.converter's makeHtml.
+   * @private
+   */
+  var process = (new Showdown.converter()).makeHtml;
 
 
   /**
@@ -78,9 +95,9 @@
    * @param--{string}-slug-The slug that needs to be prettied up.
    * @return-{string}
    */
-   var unslug = function (slug) {
+  var unslug = function (slug) {
     if (slug === 'index') {
-      return 'Table of Contents'
+      return 'Table of Contents';
     }
 
     return slug.replace(/(-(\w))/g, function () {
@@ -160,7 +177,7 @@
    * @return-{undefined}
    */
   var getFile = function (file, callback, context) {
-    var xhr = new XMLHttpRequest();
+    var xhr = new window.XMLHttpRequest();
 
     xhr.open('GET', file, true);
     xhr.send();
@@ -180,7 +197,7 @@
    */
   var matchPost = function () {
     if (this.Gutter && !this._gutterVisible) {
-      showGutter.call(this);
+      showTheGutter.call(this);
     }
 
     window.setTimeout(function () {
@@ -238,7 +255,7 @@
 
     this.timeout = window.setTimeout(function () {
       if (Showup._gutterVisible) {
-        killGutter.call(Showup);
+        killTheGutter.call(Showup);
       }
     }, 1800);
   };
@@ -271,7 +288,7 @@
    * @this---{Showup}
    * @return-{undefined}
    */
-  var showGutter = function () {
+  var showTheGutter = function () {
     if (this._gutterVisible) {
       return;
     }
@@ -289,7 +306,7 @@
    * @this---{Showup}
    * @return-{undefined}
    */
-  var killGutter = function () {
+  var killTheGutter = function () {
     if (!this._gutterVisible) {
       return;
     }
@@ -347,13 +364,6 @@
 
 
   /**
-   * Shortcut to Showdown.converter's makeHtml.
-   * @private
-   */
-  var process = (new Showdown.converter()).makeHtml;
-
-
-  /**
    * @public
    * @param--{object}----config-(required) container, posts, wordmap.
    * @return-{undefined}
@@ -365,7 +375,10 @@
 
     this.Container = config.container;
     this.Container.setAttribute('data-showup', this.Container.className);
+
     this.Gutter = config.gutter || document.querySelector('.gutter');
+    this.Gutter.setAttribute('data-showup-gutter', this.Gutter.className);
+
     this.Posts = config.posts;
 
     if (typeof config.wordmap === 'string') {
@@ -403,7 +416,7 @@
    */
   Showup.Load = function (id) {
     if (!id) {
-      return this.Load(location.hash? location.hash.substr(1) : 'index');
+      return this.Load(window.location.hash ? window.location.hash.substr(1) : 'index');
     }
 
     if (this._loading || this._active === id) {
@@ -434,4 +447,4 @@
       appendNewPost.call(this, markdown);
     }.bind(this), 750);
   };
-})(window, document);
+})(window, document, Showdown);

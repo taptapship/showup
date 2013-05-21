@@ -1,7 +1,7 @@
 # Showup.
 
 ### showdown's buddy.
-*Showup is still in a state of active development. Very risky to use, but that's all the more reason to give it a try! Break it, fix it, repeat.*
+*Showup is still in a state of active development. Very risky to use, but that's all the more reason to give it a try! Break, fix, repeat.*
 
 [![Sample](http://s23.postimg.org/4wbfxk0ff/angular_showup_sample.png)](http://stephenplusplus.github.io/generator-weblog)
 
