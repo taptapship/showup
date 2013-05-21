@@ -3,11 +3,11 @@
 ### showdown's buddy.
 *Showup is still in a state of active development. Very risky to use, but that's all the more reason to give it a try! Break it, fix it, repeat.*
 
-![](http://s23.postimg.org/4wbfxk0ff/angular_showup_sample.png)
+[![Sample](http://s23.postimg.org/4wbfxk0ff/angular_showup_sample.png)](http://stephenplusplus.github.io/generator-weblog)
 
 
 ## Demo
-[Click here](http://stephenplusplus.github.io/generator-weblog) and type "angular" to pull up a post!
+[Click here](http://stephenplusplus.github.io/generator-weblog). Type "angular" to see the search in action.
 
 
 ## About
