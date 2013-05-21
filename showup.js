@@ -75,6 +75,85 @@
 
   /**
    * @private
+   * @param--{string}-slug-The slug that needs to be prettied up.
+   * @return-{string}
+   */
+   var unslug = function (slug) {
+    if (slug === 'index') {
+      return 'Table of Contents'
+    }
+
+    return slug.replace(/(-(\w))/g, function () {
+      return ' ' + arguments[2].toUpperCase();
+    });
+  };
+
+
+  /**
+   * @private
+   * @this---{element}
+   * @param--{className}-Class name to test for.
+   * @return-{boolean}
+   */
+  var hasClass = function (className) {
+    return this.className.indexOf(className) > -1;
+  };
+
+
+  /**
+   * @private
+   * @this---{element}
+   * @return-{undefined}
+   */
+  var addClass = function () {
+    var classNames = this.className.trim().split(' ');
+    var elem = this;
+
+    if (arguments.length > 1) {
+      Array.prototype.forEach.call(arguments, function (className) {
+        if (!hasClass.call(elem, className)) {
+          classNames.push(className);
+        }
+      });
+    } else {
+      if (typeof arguments[0] === 'string') {
+        arguments[0].split(' ').forEach(function (className) {
+          if (!hasClass.call(elem, className)) {
+            classNames.push(className);
+          }
+        });
+      } else {
+        arguments[0].forEach(function (className) {
+          if (!hasClass.call(elem, className)) {
+            classNames.push(className);
+          }
+        });
+      }
+    }
+
+    this.className = classNames.join(' ');
+  };
+
+
+  /**
+   * @private
+   * @this---{element}
+   * @param--{string}-className-Class name to remove.
+   * @return-{undefined}
+   */
+  var removeClass = function (className) {
+    var classNames = this.className;
+
+    if (hasClass.call(this, className)) {
+      classNames = classNames.replace(className, '');
+    }
+
+    this.className = classNames.replace(/\s+/g, ' ').trim();
+  };
+
+
+  /**
+   * @private
    * @param--{string}---file-----Path to the file.
    * @param--{function}-callback-(optional) Called after the file is found.
    * @param--{object}---context--(optional) Context in which to invoke callback.
@@ -161,7 +240,7 @@
       if (Showup._gutterVisible) {
         killGutter.call(Showup);
       }
-    }, 3000);
+    }, 1800);
   };
 
 
@@ -180,7 +259,7 @@
       p = document.createElement('p');
       this.Gutter.appendChild(p);
     } else {
-      p = this.Gutter.querySelector('p:last-of-type')
+      p = this.Gutter.querySelector('p:last-of-type');
     }
 
     p.innerText = terms[terms.length - 1];
@@ -199,13 +278,9 @@
 
     this._gutterVisible = true;
 
-    if (this.Gutter.className.indexOf('active') === -1) {
-      this.Gutter.className += ' active';
-    }
-
-    if (this.Container.className.indexOf('gutter-visible') === -1) {
-      this.Container.className += ' gutter-visible';
-    }
+    addClass.call(this.Gutter, 'active');
+    addClass.call(this.Container, 'gutter-visible');
+    addClass.call(document.body, 'animating');
   };
 
 
@@ -226,10 +301,48 @@
     this._gutterVisible = false;
 
     this.Gutter.innerHTML = '';
-    this.Gutter.className = this.Gutter.className.replace('active', '');
 
-    this.Container.className = this.Container.className.replace('gutter-visible', '');
+    removeClass.call(this.Gutter, 'active');
+    removeClass.call(this.Container, 'gutter-visible');
+    removeClass.call(document.body, 'animating');
+  };
 
+
+  /**
+   * @private
+   * @this---{Showup}
+   * @return-{undefined}
+   */
+  var appendNewPost = function (markdown) {
+    var post = process(markdown);
+
+    var newClasses = [
+      this.Container.getAttribute('data-showup'), // Original className.
+      'animated',
+      'rollIn'
+    ];
+
+    removeClass.call(this.Container, 'rollOut');
+
+    if (this._gutterVisible) {
+      newClasses.push('gutter-visible');
+    }
+
+    if (post.indexOf('<pre>') === -1 && post.length > 1000) {
+      newClasses.push('cols');
+    } else {
+      removeClass.call(this.Container, 'cols');
+    }
+
+
+    addClass.call(this.Container, newClasses);
+    this.Container.innerHTML = post;
+
+    window.location.hash = this._active;
+
+    document.title = unslug(this._active.replace(/\d/g, '').replace(/-+/g, '-'));
+
+    this._loading = false;
   };
 
 
@@ -268,14 +381,17 @@
         }.call(this));
 
         window.addEventListener('keypress', search.bind(this));
-      }, this);
 
-      if (location.hash) {
-        this.Load(location.hash.substr(1));
-      }
+        this.Load();
+      }, this);
     } else {
       this.wordmap = config.wordmap;
+      this.Load();
     }
+
+    window.addEventListener('hashchange', function () {
+      this.Load();
+    }.bind(this));
   };
 
 
@@ -286,14 +402,18 @@
    * @return-{undefined}
    */
   Showup.Load = function (id) {
-    if (!id || this._loading || this._active === id) {
+    if (!id) {
+      return this.Load(location.hash? location.hash.substr(1) : 'index');
+    }
+
+    if (this._loading || this._active === id) {
       return;
     }
 
     this._active = id;
     this._loading = true;
 
-    this.Container.className = this.Container.className.replace('rollIn', '');
+    removeClass.call(this.Container, 'rollIn');
 
     getFile(this.Posts + id + '.md', this.InsertPost, this);
   };
@@ -306,23 +426,12 @@
    * @return-{undefined}
    */
   Showup.InsertPost = function (markdown) {
-    var post = process(markdown);
-    var originalClassNames = this.Container.getAttribute('data-showup');
-    var newClassNames = originalClassNames + ' animated rollIn';
+    // Throw the current post out.
+    addClass.call(this.Container, 'rollOut');
 
-    if (this._gutterVisible) {
-      newClassNames += ' gutter-visible';
-    }
-
-    if (post.indexOf('<pre>') === -1) {
-      newClassNames += ' cols';
-    }
-
-    this.Container.className = newClassNames;
-    this.Container.innerHTML = post;
-
-    window.location.hash = this._active;
-
-    this._loading = false;
+    // Wait until the current post is removed to append the new post.
+    window.setTimeout(function () {
+      appendNewPost.call(this, markdown);
+    }.bind(this), 750);
   };
 })(window, document);
