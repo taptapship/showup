@@ -25,14 +25,12 @@
    *
    *    [
    *      "id:the-filename-of-your-post",
-   *      "every",
-   *      "word",
+   *      "keywords",
    *      "from",
    *      "your",
    *      "post",
    *      "id:the-filename-of-another-one-of-your-posts",
-   *      "every",
-   *      "word",
+   *      "keywords",
    *      "from",
    *      "this",
    *      "post",
@@ -96,13 +94,13 @@
    * @return-{string}
    */
   var unslug = function (slug) {
-    if (slug === 'index') {
-      return 'Table of Contents';
+    slug = slug.replace(/\d{1,2}-\d{1,2}-\d{4}/g, '').replace(/-/g, ' ').toLowerCase() + '.';
+
+    if (slug === 'index.') {
+      slug = 'table of contents.';
     }
 
-    return slug.replace(/(-(\w))/g, function () {
-      return ' ' + arguments[2].toUpperCase();
-    });
+    return slug;
   };
 
 
@@ -279,7 +277,7 @@
       p = this.Gutter.querySelector('p:last-of-type');
     }
 
-    p.innerText = terms[terms.length - 1];
+    p.textContent = terms[terms.length - 1];
   };
 
 
@@ -345,7 +343,7 @@
       newClasses.push('gutter-visible');
     }
 
-    if (post.indexOf('<pre>') === -1 && post.length > 1000) {
+    if (post.indexOf('<pre>') === -1 && post.length > 2000) {
       newClasses.push('cols');
     } else {
       removeClass.call(this.Container, 'cols');
@@ -357,7 +355,9 @@
 
     window.location.hash = this._active;
 
-    document.title = unslug(this._active.replace(/\d/g, '').replace(/-+/g, '-'));
+    document.title = unslug(this._active);
+
+    window.scrollTo(0, 0);
 
     this._loading = false;
   };
