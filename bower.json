@@ -1,6 +1,6 @@
 {
   "name": "showup",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Stephen Sawchuk",
   "description": "A Showdown companion.",
   "main": "showup.js",
