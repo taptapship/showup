@@ -111,7 +111,9 @@
    * @return-{boolean}
    */
   var hasClass = function (className) {
-    return this.className.indexOf(className) > -1;
+    var regex = new RegExp('(^| )' + className + '($| )');
+    
+    return regex.test(this.className);
   };
 
 
